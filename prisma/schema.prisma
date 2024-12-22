@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  loginId      String    @unique @map("login_id") @db.VarChar(255)
+  password     String    @db.VarChar(255)
+  username     String    @db.VarChar(255)
+  role         String    @db.VarChar(255)
+  posts        Post[]
+  ownArts      Art[]
+  ownGalleries Gallery[]
+
+  Token     Token?
+  createdAt DateTime @default(dbgenerated("NOW()")) @map("created_at")
+  updatedAt DateTime @default(dbgenerated("NOW()")) @updatedAt @map("updated_at")
+
+  @@map("user")
+}
+
+model Art {
+  id             Int    @id @default(autoincrement())
+  artName        String @default("Untitled") @map("art_name") @db.VarChar(255)
+  artDescription String @default("-") @map("art_description") @db.Text()
+  fileUrl        String @default("") @map("file_url") @db.VarChar(255)
+  artPrice       Float  @default(0) @map("art_price") @db.Float()
+  artAuthor      String @default("") @map("art_author") @db.VarChar(255)
+
+  artPosition ArtPosition[]
+
+  owner   User @relation(fields: [ownerId], references: [id])
+  ownerId Int  @map("owner_id")
+
+  // gallery          Gallery @relation(fields: [belongsGalleryId], references: [id])
+  // belongsGalleryId Int     @map("belongs_gallery_id")
+
+  galleries Gallery[]
+
+  createdAt DateTime @default(dbgenerated("NOW()")) @map("created_at")
+  updatedAt DateTime @default(dbgenerated("NOW()")) @updatedAt @map("updated_at")
+
+  @@map("art")
+}
+
+model ArtPosition {
+ 
+  positionX          Float  @default(0) @map("position_x") @db.Double()
+  positionY          Float  @default(0) @map("position_y") @db.Double()
+  positionZ          Float  @default(0) @map("position_z") @db.Double()
+  rotationX          Float  @default(0) @map("rotation_x") @db.Double()
+  rotationY          Float  @default(0) @map("rotation_y") @db.Double()
+  rotationZ          Float  @default(0) @map("rotation_z") @db.Double()
+
+  art   Art @relation(fields: [artId], references: [id], onDelete: Cascade)
+  artId Int  @map("art_id")
+
+  gallery   Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  galleryId Int  @map("gallery_id")
+
+
+  @@unique([artId, galleryId])
+}
+
+model Gallery {
+  id                 Int    @id @default(autoincrement())
+  galleryName        String @default("Untitled") @map("gallery_name") @db.VarChar(255)
+  galleryDescription String @default("-") @map("gallery_description") @db.Text()
+  galleryType        Int    @default(0) @map("gallery_type") @db.Int()
+  fileUrl            String @default("") @map("file_url") @db.VarChar(255)
+  galleryAuthor      String @default("") @map("art_author") @db.VarChar(255)
+
+  positionX          Float  @default(0) @map("position_x") @db.Double()
+  positionY          Float  @default(0) @map("position_y") @db.Double()
+  positionZ          Float  @default(0) @map("position_z") @db.Double()
+  rotationX          Float  @default(0) @map("rotation_x") @db.Double()
+  rotationY          Float  @default(0) @map("rotation_y") @db.Double()
+  rotationZ          Float  @default(0) @map("rotation_z") @db.Double()
+
+  owner   User @relation(fields: [ownerId], references: [id])
+  ownerId Int  @map("owner_id")
+
+  artPosition ArtPosition[]
+
+  createdAt DateTime @default(dbgenerated("NOW()")) @map("created_at")
+  updatedAt DateTime @default(dbgenerated("NOW()")) @updatedAt @map("updated_at")
+  arts       Art[]
+
+  @@map("gallery")
+}
+
+// model ArtsOnGalleries {
+//   art       Art     @relation(fields: [artId], references: [id])
+//   artId     Int // relation scalar field (used in the `@relation` attribute above)
+//   gallery   Gallery @relation(fields: [galleryId], references: [id])
+//   galleryId Int // relation scalar field (used in the `@relation` attribute above)
+//   assignedAt DateTime @default(now())
+//   assignedBy Int
+
+//   @@id([artId, galleryId])
+// }
+
+model Post {
+  id        Int     @id @default(autoincrement())
+  title     String  @db.VarChar(255)
+  content   String  @db.VarChar(512)
+  published Boolean @default(false)
+  author    User    @relation(fields: [authorId], references: [id])
+  authorId  Int     @map("author_id")
+
+  @@map("post")
+}
+
+model Token {
+  id           Int      @id @default(autoincrement())
+  refreshToken String   @map("refresh_token") @db.VarChar(255)
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int      @unique @map("user_id")
+  createdAt    DateTime @default(dbgenerated("NOW()")) @map("created_at")
+  updatedAt    DateTime @default(dbgenerated("NOW()")) @updatedAt @map("updated_at")
+
+  @@map("token")
+}

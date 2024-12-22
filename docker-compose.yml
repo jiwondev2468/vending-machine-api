@@ -1,0 +1,30 @@
+# mariadb container와 묶어주기
+# AWS에서는 미사용
+
+version: "3.5"
+
+services:
+  # frontend:
+  #   build: ../rockwon-gallery-ui
+  #   ports:
+  #     - 9090:9090
+  backend:
+    build:
+      context: .
+      dockerfile: /dockerfile
+    ports:
+      - "50990:50990"
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb-container
+    environment:
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mariadb
+      TZ: Asia/Seoul
+    volumes:
+      - mariadb-db-volume:/var/lib/mysql
+    restart: always
+    ports:
+      - 3306:3306
